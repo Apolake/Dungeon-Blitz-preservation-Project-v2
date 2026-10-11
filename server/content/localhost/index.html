@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Play Dungeon Blitz</title>
-  <script src="js/swfobject.min.js"></script>
-
+  <title>Dungeon Blitz - Original Game</title>
   <style>
     html, body {
       margin: 0;
@@ -18,93 +16,104 @@
     #game-container {
       width: 100%;
       height: 100%;
-    }
-
-    #flash-hint {
       position: absolute;
       inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #aaa;
-      font-family: sans-serif;
-      text-align: center;
-      pointer-events: none;
     }
 
-    #fallback {
-      display: none;
-      color: #ccc;
-      font-family: sans-serif;
-      text-align: center;
-      padding-top: 20vh;
+    ruffle-player {
+      width: 100% !important;
+      height: 100% !important;
     }
-
-    a { color: #6cf; }
   </style>
+
+  <!-- URL Rewriter for Port & Host Compatibility -->
+  <script>
+    (function() {
+      const currentOrigin = window.location.origin;
+      const currentHost = window.location.host;
+
+      function rewrite(url) {
+        if (!url || typeof url !== 'string') return url;
+        if (url.includes('api.gameanalytics.com')) {
+          return currentOrigin + '/1/cc9c404568c085b07491b25d000f6094/design';
+        }
+        return url.replace(/^http:\/\/(localhost|127\.0\.0\.1)(?::80)?(\/.*)$/, currentOrigin + '$2');
+      }
+
+      // Intercept window.fetch
+      const origFetch = window.fetch;
+      window.fetch = function(resource, init) {
+        if (typeof resource === 'string') {
+          resource = rewrite(resource);
+        } else if (resource && resource.url) {
+          const newUrl = rewrite(resource.url);
+          resource = new Request(newUrl, resource);
+        }
+        return origFetch.call(this, resource, init);
+      };
+
+      // Intercept XMLHttpRequest
+      const origOpen = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+        if (typeof url === 'string') {
+          url = rewrite(url);
+        }
+        return origOpen.call(this, method, url, ...rest);
+      };
+    })();
+  </script>
+
+  <!-- Load Ruffle WebAssembly Flash Player -->
+  <script>
+    window.RufflePlayer = window.RufflePlayer || {};
+    const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/ws";
+    window.RufflePlayer.config = {
+      autoplay: "on",
+      unmuteOverlay: "hidden",
+      letterbox: "on",
+      allowScriptAccess: true,
+      openUrlMode: "confirm",
+      socketProxy: [
+        { host: "127.0.0.1", port: 8080, proxyUrl: wsUrl },
+        { host: "127.0.0.1", port: 443, proxyUrl: wsUrl },
+        { host: "127.0.0.1", port: 8092, proxyUrl: wsUrl },
+        { host: "127.0.0.1", port: 7498, proxyUrl: wsUrl },
+        { host: "localhost", port: 8080, proxyUrl: wsUrl },
+        { host: "localhost", port: 443, proxyUrl: wsUrl },
+        { host: "localhost", port: 8092, proxyUrl: wsUrl },
+        { host: "localhost", port: 7498, proxyUrl: wsUrl },
+        { host: window.location.hostname, port: 8080, proxyUrl: wsUrl },
+        { host: window.location.hostname, port: 443, proxyUrl: wsUrl },
+        { host: window.location.hostname, port: 8092, proxyUrl: wsUrl },
+        { host: window.location.hostname, port: 7498, proxyUrl: wsUrl }
+      ]
+    };
+  </script>
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
 
 <body>
-
   <div id="game-container"></div>
 
-  <div id="flash-hint">
-    <div>
-      <p>Waiting for Adobe Flash Player…</p>
-      <p style="font-size:0.9em; opacity:0.7">
-        Click “Allow” in your browser’s address bar
-      </p>
-    </div>
-  </div>
-
-  <!-- Hard fallback if Flash is missing -->
-  <div id="fallback">
-    <h2>Adobe Flash Player Required</h2>
-    <p>
-      Enable Flash for this site when prompted,<br>
-      or use the Flash Projector.
-    </p>
-    <p>
-      • <a href="https://www.adobe.com/support/flashplayer/debug_downloads.html">
-        Flash Projector (recommended)
-      </a>
-    </p>
-  </div>
-
   <script>
-    const swfUrl = "p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv";
+    window.addEventListener("DOMContentLoaded", () => {
+      const swfUrl = "p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv";
+      const container = document.getElementById("game-container");
+      
+      const ruffle = window.RufflePlayer.newest();
+      const player = ruffle.createPlayer();
+      player.style.width = "100%";
+      player.style.height = "100%";
+      container.appendChild(player);
 
-    function showFallback() {
-      document.getElementById("flash-hint").style.display = "none";
-      document.getElementById("fallback").style.display = "block";
-    }
-
-    function hideHint() {
-      const hint = document.getElementById("flash-hint");
-      if (hint) hint.style.display = "none";
-    }
-
-    // Attempt native Flash immediately
-    swfobject.embedSWF(
-      swfUrl,
-      "game-container",
-      "100%",
-      "100%",
-      "10.0.0",
-      null,
-      { fv: "cbq", gv: "cbv" },
-      { allowScriptAccess: "always", allowFullScreen: "true" },
-      { id: "DungeonBlitz", name: "DungeonBlitz" },
-      function (e) {
-        if (!e.success) {
-          // Flash not installed or unavailable
-          showFallback();
-        }
-      }
-    );
-
-    // Give Flash time to initialize after permission
-    setTimeout(hideHint, 2500);
+      player.load({
+        url: swfUrl,
+        parameters: { fv: "cbq", gv: "cbv" },
+        allowScriptAccess: true,
+        letterbox: "on",
+        backgroundColor: "#000000"
+      });
+    });
   </script>
 </body>
 </html>

@@ -248,10 +248,10 @@ if __name__ == "__main__":
     # Start TCP Game Server
     servers = start_servers()
     print("=================================================================")
-    print(" [✓] Dungeon Blitz Unified Server Running!")
-    print(f" [✓] Modern Web Client: http://localhost:{PORT_HTTP}/")
-    print(f" [✓] WebSocket Endpoint: ws://localhost:{PORT_HTTP}/ws")
-    print(f" [✓] Flash Projector URL: http://localhost:{PORT_HTTP}/p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv")
+    print(" [OK] Dungeon Blitz Unified Server Running!")
+    print(f" [OK] Modern Web Client: http://localhost:{PORT_HTTP}/")
+    print(f" [OK] WebSocket Endpoint: ws://localhost:{PORT_HTTP}/ws")
+    print(f" [OK] Flash Projector URL: http://localhost:{PORT_HTTP}/p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv")
     print("=================================================================")
 
     if ENABLE_ADMIN_PANEL:

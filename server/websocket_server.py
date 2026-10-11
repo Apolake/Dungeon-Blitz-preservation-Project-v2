@@ -1,86 +1,77 @@
 import asyncio
 import os
-import struct
 import threading
-from aiohttp import web
-from PKTTYPES import PACKET_HANDLERS
-from globals import GS
+from aiohttp import web, WSMsgType
+from globals import GS, PORT_HTTP, PORTS
 
-class WebSocketConnectionAdapter:
-    def __init__(self, ws: web.WebSocketResponse, loop: asyncio.AbstractEventLoop, addr: tuple):
+
+class WebSocketClientSession:
+    """Adapts an aiohttp WebSocket connection to the Dungeon Blitz ClientSession interface."""
+    def __init__(self, ws: web.WebSocketResponse, addr: tuple):
         self.ws = ws
-        self.loop = loop
         self.addr = addr
-        self.closed = False
+        self.session_id = id(self)
+        self.buffer = bytearray()
+        self.authenticated = False
+        self.account_id = None
+        self.account_data = None
+        self.username = None
+        self.player = None
+        self.current_location = None
+        self.is_websocket = True
 
-    def sendall(self, data: bytes):
-        if self.closed or self.ws.closed:
-            return
-        try:
-            asyncio.run_coroutine_threadsafe(self._safe_send(data), self.loop)
-        except Exception:
-            pass
-
-    async def _safe_send(self, data: bytes):
+    async def send_bytes_async(self, data: bytes):
         if not self.ws.closed:
-            try:
-                await self.ws.send_bytes(data)
-            except Exception:
-                pass
+            await self.ws.send_bytes(data)
+
+    def send(self, data: bytes):
+        """Synchronous send method called by server game logic."""
+        if self.ws.closed:
+            return
+        asyncio.run_coroutine_threadsafe(
+            self.send_bytes_async(data),
+            self.loop
+        )
 
     def close(self):
-        if not self.closed:
-            self.closed = True
-            try:
-                asyncio.run_coroutine_threadsafe(self.ws.close(), self.loop)
-            except Exception:
-                pass
+        if not self.ws.closed:
+            asyncio.run_coroutine_threadsafe(
+                self.ws.close(),
+                self.loop
+            )
 
 
 async def ws_handler(request: web.Request):
-    ws = web.WebSocketResponse(max_msg_size=10 * 1024 * 1024)
+    ws = web.WebSocketResponse()
     await ws.prepare(request)
 
-    peername = request.transport.get_extra_info("peername")
-    addr = peername if peername else ("127.0.0.1", 0)
-    loop = asyncio.get_running_loop()
+    peername = request.transport.get_extra_info('peername')
+    addr = peername if peername else ('websocket', 0)
 
-    from server import ClientSession
-    adapter = WebSocketConnectionAdapter(ws, loop, addr)
-    session = ClientSession(adapter, addr)
+    session = WebSocketClientSession(ws, addr)
+    session.loop = asyncio.get_running_loop()
+
+    # Register with global session pool
     GS.all_sessions.append(session)
-    print(f"[WS] Client connected: {addr}")
+    print(f"[WS] Client connected from {addr}. Total sessions: {len(GS.all_sessions)}")
 
-    buffer = bytearray()
     try:
-        async for msg in ws:
-            if msg.type == web.WSMsgType.BINARY:
-                buffer.extend(msg.data)
-                while len(buffer) >= 4:
-                    pkt = int.from_bytes(buffer[0:2], byteorder="big")
-                    length = int.from_bytes(buffer[2:4], byteorder="big")
-                    total = 4 + length
-                    if len(buffer) < total:
-                        break
-                    data = bytes(buffer[:total])
-                    del buffer[:total]
+        from server import handle_incoming_data, handle_disconnect
 
-                    handler = PACKET_HANDLERS.get(pkt)
-                    if handler:
-                        # Run handler in thread pool to prevent blocking asyncio loop
-                        await asyncio.to_thread(handler, session, data)
-                    else:
-                        print(f"[{addr}] [WS] Unhandled packet 0x{pkt:02X}")
-            elif msg.type == web.WSMsgType.ERROR:
+        async for msg in ws:
+            if msg.type == WSMsgType.BINARY:
+                handle_incoming_data(session, bytearray(msg.data))
+            elif msg.type == WSMsgType.TEXT:
+                handle_incoming_data(session, bytearray(msg.data.encode('utf-8')))
+            elif msg.type == WSMsgType.ERROR:
                 print(f"[WS] WebSocket error: {ws.exception()}")
                 break
-            elif msg.type in (web.WSMsgType.CLOSE, web.WSMsgType.CLOSING, web.WSMsgType.CLOSED):
-                break
-    except Exception as e:
-        print(f"[WS] Session exception: {e}")
     finally:
-        print(f"[WS] Disconnected: {addr}")
-        session.stop()
+        from server import handle_disconnect
+        handle_disconnect(session)
+        if session in GS.all_sessions:
+            GS.all_sessions.remove(session)
+        print(f"[WS] Client disconnected from {addr}. Remaining: {len(GS.all_sessions)}")
 
     return ws
 
@@ -93,49 +84,56 @@ async def health_handler(request: web.Request):
     })
 
 
-def create_app(web_static_dir: str = None, flash_static_dir: str = None):
+def create_app(flash_static_dir: str = None):
     app = web.Application()
     app.router.add_get("/ws", ws_handler)
     app.router.add_get("/api/health", health_handler)
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    if not web_static_dir:
-        web_static_dir = os.path.join(base_dir, "web_dist")
     if not flash_static_dir:
         flash_static_dir = os.path.join(base_dir, "content", "localhost")
 
     async def index_handler(request: web.Request):
-        idx = os.path.join(web_static_dir, "index.html")
-        if os.path.exists(idx):
-            return web.FileResponse(idx)
         flash_idx = os.path.join(flash_static_dir, "index.html")
         if os.path.exists(flash_idx):
             return web.FileResponse(flash_idx)
         return web.Response(text="Dungeon Blitz Server Online")
 
+    async def crossdomain_handler(request: web.Request):
+        cd = os.path.join(flash_static_dir, "crossdomain.xml")
+        if os.path.exists(cd):
+            return web.FileResponse(cd)
+        return web.Response(text='<?xml version="1.0"?><cross-domain-policy><allow-access-from domain="*" to-ports="*"/></cross-domain-policy>', content_type="application/xml")
+
+    app.router.add_get("/crossdomain.xml", crossdomain_handler)
     app.router.add_get("/", index_handler)
     app.router.add_get("/index.html", index_handler)
 
-    # Assets from Vite
-    assets_dir = os.path.join(web_static_dir, "assets")
-    if os.path.exists(assets_dir):
-        app.router.add_static("/assets", assets_dir, name="vite_assets")
+    # Mock gameanalytics so game initialization does not hang
+    async def analytics_mock(request: web.Request):
+        return web.json_response({"status": "ok"})
+
+    app.router.add_post("/1/cc9c404568c085b07491b25d000f6094/design", analytics_mock)
+    app.router.add_get("/1/cc9c404568c085b07491b25d000f6094/design", analytics_mock)
 
     # Serve Flash game assets
     if os.path.exists(flash_static_dir):
         p_dir = os.path.join(flash_static_dir, "p")
         if os.path.exists(p_dir):
             app.router.add_static("/p", p_dir, name="p_assets")
+        js_dir = os.path.join(flash_static_dir, "js")
+        if os.path.exists(js_dir):
+            app.router.add_static("/js", js_dir, name="js_assets")
         app.router.add_static("/flash", flash_static_dir, show_index=False, name="flash_root")
 
     return app
 
 
-def start_websocket_server(host: str = "0.0.0.0", port: int = 8090, web_static_dir: str = None, flash_static_dir: str = None):
+def start_websocket_server(host: str = "0.0.0.0", port: int = 8090, flash_static_dir: str = None):
     def _runner():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        app = create_app(web_static_dir, flash_static_dir)
+        app = create_app(flash_static_dir)
         runner = web.AppRunner(app)
         loop.run_until_complete(runner.setup())
         site = web.TCPSite(runner, host, port)
