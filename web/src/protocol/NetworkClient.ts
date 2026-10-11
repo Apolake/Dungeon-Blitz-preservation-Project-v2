@@ -24,7 +24,7 @@ export class NetworkClient {
       const port = loc.port ? loc.port : (loc.protocol === "https:" ? "443" : "80");
       // If dev server on 3000, connect to backend port 8080 or use vite proxy /ws
       if (port === "3000") {
-        this.url = `${proto}//${host}:8080/ws`;
+        this.url = `${proto}//${host}:8090/ws`;
       } else {
         this.url = `${proto}//${loc.host}/ws`;
       }

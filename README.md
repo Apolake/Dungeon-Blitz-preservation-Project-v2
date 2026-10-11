@@ -14,10 +14,10 @@ Run the full game server, database, and modern web client with a single command:
 docker compose up -d
 ```
 
-Open your browser to: **[http://localhost:8080](http://localhost:8080)**
+Open your browser to: **[http://localhost:8090](http://localhost:8090)**
 
 * Works in **all modern browsers** (Chrome, Edge, Firefox, Safari, Mobile).
-* Single-port setup (Web assets + WebSockets on port 8080).
+* Single-port setup (Web assets + WebSockets on port 8090).
 * Embedded persistent SQLite database automatically mounted in `dungeon-blitz-data` volume.
 
 ---
@@ -43,7 +43,7 @@ python server.py
 ```
 
 ### 3. Play in Browser
-Open **`http://localhost:8080`** in your browser.
+Open **`http://localhost:8090`** in your browser.
 
 ---
 
@@ -58,7 +58,7 @@ Open **`http://localhost:8080`** in your browser.
 2. **🏛️ WebAssembly Flash Preservation (Ruffle)**
    * One-click toggle in the top-right header to switch to the original compiled Flash SWFs running inside modern WebAssembly.
    * Backward-compatible with standalone Flash Projector at:
-     `http://localhost:8080/p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv` (TCP port `8082`).
+     `http://localhost:8090/p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv` (TCP port `8092`).
 
 ---
 

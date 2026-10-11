@@ -13,14 +13,14 @@ export default defineConfig({
     port: 3000,
     proxy: {
       "/ws": {
-        target: "ws://localhost:8080",
+        target: "ws://localhost:8090",
         ws: true,
       },
       "/api": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8090",
       },
       "/p": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8090",
       },
     },
   },

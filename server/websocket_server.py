@@ -131,7 +131,7 @@ def create_app(web_static_dir: str = None, flash_static_dir: str = None):
     return app
 
 
-def start_websocket_server(host: str = "0.0.0.0", port: int = 8080, web_static_dir: str = None, flash_static_dir: str = None):
+def start_websocket_server(host: str = "0.0.0.0", port: int = 8090, web_static_dir: str = None, flash_static_dir: str = None):
     def _runner():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)

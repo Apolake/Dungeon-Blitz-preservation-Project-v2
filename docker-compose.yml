@@ -10,19 +10,19 @@ services:
     restart: unless-stopped
     environment:
       - HOST=0.0.0.0
-      - PORT_HTTP=8080
-      - TCP_PORTS=8082
+      - PORT_HTTP=8090
+      - TCP_PORTS=8092
       - DATA_DIR=/data
     ports:
       # Modern Web Client & WebSocket Gateway
-      - "8080:8080"
+      - "8090:8090"
       # Legacy TCP Game Server (Optional for Flash Projector)
-      - "8082:8082"
+      - "8092:8092"
     volumes:
       # Persistent SQLite Database & Character Saves
       - dungeon-blitz-data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/health"]
       interval: 30s
       timeout: 5s
       retries: 3

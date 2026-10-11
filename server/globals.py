@@ -7,9 +7,9 @@ from constants import class_3, class_1, class_64, class_111, class_66, GearType,
 
 import os
 HOST = os.getenv("HOST", "0.0.0.0")
-TCP_PORT_STR = os.getenv("TCP_PORTS", "8082")
+TCP_PORT_STR = os.getenv("TCP_PORTS", "8092")
 PORTS = [int(p.strip()) for p in TCP_PORT_STR.split(",") if p.strip()]
-PORT_HTTP = int(os.getenv("PORT_HTTP", os.getenv("PORT", "8080")))
+PORT_HTTP = int(os.getenv("PORT_HTTP", os.getenv("PORT", "8090")))
 
 class GlobalState:
     def __init__(self):
