@@ -369,7 +369,7 @@ def send_existing_entities_to_joiner(joiner):
                 pkt = Send_Entity_Data(ent_dict)
                 framed = struct.pack(">HH", 0x0F, len(pkt)) + pkt
                 joiner.conn.sendall(framed)
-                #print(f"[JOIN] Sent player {ent_dict['name']} (eid={other.clientEntID}) → {joiner.addr}")
+                #print(f"[JOIN] Sent player {ent_dict['name']} (eid={other.clientEntID}) -> {joiner.addr}")
             except Exception as ex:
                 print(f"[JOIN] Error sending player {ent_dict['name']} to {joiner.addr}: {ex}")
 
@@ -511,7 +511,7 @@ def handle_entity_full_update(session, data):
                     and other.current_level == session.current_level
             ):
                 other.conn.sendall(framed)
-                print(f"[SPAWN] Broadcasted new entity {entity_id} ({ent_name}) → {other.addr}")
+                print(f"[SPAWN] Broadcasted new entity {entity_id} ({ent_name}) -> {other.addr}")
 
     # First-time world load for this player
     if not session.player_spawned:
@@ -535,7 +535,7 @@ def handle_entity_full_update(session, data):
                         and other.current_level == session.current_level
                 ):
                     other.conn.sendall(framed)
-                    #print(f"[JOIN] Broadcasted Send_Entity_Data for {ent_dict['name']} → {other.addr}")
+                    #print(f"[JOIN] Broadcasted Send_Entity_Data for {ent_dict['name']} -> {other.addr}")
 
 def ensure_level_npcs(level_name: str) -> None:
     if level_name in GS.level_entities:

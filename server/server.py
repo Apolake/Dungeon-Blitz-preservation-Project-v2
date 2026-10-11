@@ -7,7 +7,8 @@ import time
 
 from PKTTYPES import PACKET_HANDLERS
 from PolicyServer import start_policy_server
-from globals import HOST, PORTS, handle_entity_destroy_server, GS
+from globals import HOST, PORTS, PORT_HTTP, handle_entity_destroy_server, GS
+from websocket_server import start_websocket_server
 from scheduler import set_active_session_resolver
 from static_server import start_static_server
 from accounts import save_characters
@@ -136,7 +137,7 @@ class ClientSession:
 
         #print(
         #    f"[{self.addr}] Saved player position: "
-        #    f"{char['CurrentLevel']['name']} → "
+        #    f"{char['CurrentLevel']['name']} -> "
         #    f"({char['CurrentLevel']['x']}, {char['CurrentLevel']['y']})"
         #)
 
@@ -235,11 +236,23 @@ def start_servers():
     return servers
 
 if __name__ == "__main__":
-    start_policy_server(host="127.0.0.1", port=843)
-    start_static_server(host="127.0.0.1", port=80, directory="content/localhost")
+    # Start Unified HTTP / WebSocket Web Server
+    start_websocket_server(host=HOST, port=PORT_HTTP)
+
+    # Start Flash policy server (best-effort)
+    try:
+        start_policy_server(host=HOST, port=843)
+    except Exception as e:
+        print(f"[PolicyServer] Note: {e}")
+
+    # Start TCP Game Server
     servers = start_servers()
-    print("For Browser running on : http://localhost/index.html")
-    print("For Flash Projector running on : http://localhost/p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv")
+    print("=================================================================")
+    print(" [✓] Dungeon Blitz Unified Server Running!")
+    print(f" [✓] Modern Web Client: http://localhost:{PORT_HTTP}/")
+    print(f" [✓] WebSocket Endpoint: ws://localhost:{PORT_HTTP}/ws")
+    print(f" [✓] Flash Projector URL: http://localhost:{PORT_HTTP}/p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv")
+    print("=================================================================")
 
     if ENABLE_ADMIN_PANEL:
         try:

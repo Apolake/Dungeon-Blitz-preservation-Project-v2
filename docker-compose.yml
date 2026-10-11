@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  dungeon-blitz:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dungeon-blitz:latest
+    container_name: dungeon-blitz-server
+    restart: unless-stopped
+    environment:
+      - HOST=0.0.0.0
+      - PORT_HTTP=8080
+      - TCP_PORTS=8082
+      - DATA_DIR=/data
+    ports:
+      # Modern Web Client & WebSocket Gateway
+      - "8080:8080"
+      # Legacy TCP Game Server (Optional for Flash Projector)
+      - "8082:8082"
+    volumes:
+      # Persistent SQLite Database & Character Saves
+      - dungeon-blitz-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  dungeon-blitz-data:
+    name: dungeon-blitz-data

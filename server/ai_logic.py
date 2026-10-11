@@ -65,7 +65,7 @@ def broadcast_npc_move(npc, level_name, delta_x, delta_y, delta_vx):
     for s in recipients:
         try:
             s.conn.sendall(pkt)
-            #print(f"    → sent to {s.addr}")
+            #print(f"    -> sent to {s.addr}")
         except Exception as e:
             print(f"    ✗ {s.addr}: {e}")
 

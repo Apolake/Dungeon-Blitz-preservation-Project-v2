@@ -182,8 +182,8 @@ def pick_secondary_rune(
     chance_any = min(chance_any, 100.0)
     chance_legendary = min(chance_legendary, 100.0)
 
-    #print(f"[Forge RNG] mats={materials_used} → pts={total_points}, "
-    #      f"Anvil Points+{craft_level} → chance_any={chance_any:.1f}%, "
+    #print(f"[Forge RNG] mats={materials_used} -> pts={total_points}, "
+    #      f"Anvil Points+{craft_level} -> chance_any={chance_any:.1f}%, "
     #      f"chance_legendary={chance_legendary:.1f}%")
 
     has_secondary = (random.random() * 100) < chance_any
@@ -264,7 +264,7 @@ def handle_start_forge(session, data):
     save_characters(session.user_id, session.char_list)
     schedule_forge(session.user_id, session.current_character, end_ts, primary, secondary)
     #print(
-    #    f"[{session.addr}] Forge started → ReadyTime={end_ts} "
+    #    f"[{session.addr}] Forge started -> ReadyTime={end_ts} "
     #    f"({duration_sec}s), primary={primary}, secondary={secondary}, var_8={var_8}"
     #)
 

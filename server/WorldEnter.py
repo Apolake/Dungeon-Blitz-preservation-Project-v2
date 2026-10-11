@@ -264,7 +264,7 @@ def Player_Data_Packet(char: dict,
             mdef = get_mission_def(mid)
             mstate = missions_state.get(str(mid))
             if mdef["Tier"]:
-                # Achievement/special → exactly one bit: 1 means create Mission(id, READY, 0)
+                # Achievement/special -> exactly one bit: 1 means create Mission(id, READY, 0)
                 ready = (mstate is not None) and (mstate.get("state") == Mission.const_72)
                 buf.write_method_11(1 if ready else 0, 1)
                 continue
@@ -285,7 +285,7 @@ def Player_Data_Packet(char: dict,
                 if mdef["highscore"] > 1:
                     buf.write_method_4(int(mstate.get("currCount", 0)))
             else:
-                # Third bit: 1 → READY (turn-in), 0 → CLAIMED (already collected)
+                # Third bit: 1 -> READY (turn-in), 0 -> CLAIMED (already collected)
                 # (client uses this to choose const_72 vs const_58)
                 is_turnin = 1 if state == Mission.const_72 else 0
                 buf.write_method_11(is_turnin, 1)
@@ -575,7 +575,7 @@ def Player_Data_Packet(char: dict,
        for m in members:
            buf.write_method_13(m["name"])  # name
            buf.write_method_6(m["classID"],
-                              Entity.const_244)  # class → client maps via Entity.method_244()
+                              Entity.const_244)  # class -> client maps via Entity.method_244()
            buf.write_method_6(m["level"], Entity.MAX_CHAR_LEVEL_BITS)
            buf.write_method_6(m.get("rank", 0), Entity.const_172)  # rank, not status
 

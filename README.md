@@ -1,76 +1,92 @@
-# 🏰 Dungeon Blitz - Preservation Project
+# 🏰 Dungeon Blitz - Modern Web Revival & Preservation Project
 
-### Reviving the original Dungeon Blitz experience for archival and preservation purposes.
+### Reviving the original Dungeon Blitz experience with modern web architecture, WebSockets, in-browser play, and instant Docker containerization.
 
-:paw_prints: The project [Contributors](../../contributors)
-
----
-
-## ⚡ How to Play
-
-1. **Install Requirements** (listed below)
-2. **Run** `server.py` (don't forget to cd into server first)
-3. Choose how you'd like to play:
-
-   * **Option 1:** Flash Projector
-
-     * Open the projector
-     * Go to `File` > `Open` > Paste this URL:
-       `http://localhost/p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv`
-   * **Option 2:** Flash-Compatible Browser
-
-     * Open `http://localhost/index.html` in your browser
-  
+🐾 The project [Contributors](../../contributors)
 
 ---
 
-## 🪠 Requirements
+## 🚀 Instant Quick Start (Docker - Recommended)
 
-1. This repository (game files)
-2. [Python](https://www.python.org/)
-3. A Flash-compatible browser **OR** a standalone Flash projector
+Run the full game server, database, and modern web client with a single command:
 
----
+```bash
+docker compose up -d
+```
 
-## \:flashlight: Flash Options
+Open your browser to: **[http://localhost:8080](http://localhost:8080)**
 
-### Option 1: Flash Projector
-
-* Download from [this GitHub archive](https://github.com/Grubsic/Adobe-Flash-Player-Debug-Downloads-Archive)
-
-### Option 2: Flash-Compatible Browser
-
-* [Flash Browser](https://github.com/radubirsan/FlashBrowser) — Open-source project with built-in Flash support
-
-#### Flash Player Installers:
-
-* **For Firefox / Basilisk (NPAPI):**
-  [Download NPAPI Flash Player](https://archive.org/download/flashplayerarchive/pub/flashplayer/installers/archive/fp_32.0.0.371_archive.zip/32_0_r0_371%2Fflashplayer32_0r0_371_win.exe)
-
-* **For Opera / Chromium (PPAPI):**
-  [Download PPAPI Flash Player](https://archive.org/download/flashplayerarchive/pub/flashplayer/installers/archive/fp_32.0.0.371_archive.zip/32_0_r0_371%2Fflashplayer32_0r0_371_winpep.exe)
-
-> These installers are for version **32.0.0.371**, the last build without Adobe's end-of-life (EOL) kill switch. All files come from the [Adobe Flash Player Archive](https://archive.org/download/flashplayerarchive/).
+* Works in **all modern browsers** (Chrome, Edge, Firefox, Safari, Mobile).
+* Single-port setup (Web assets + WebSockets on port 8080).
+* Embedded persistent SQLite database automatically mounted in `dungeon-blitz-data` volume.
 
 ---
 
-## \:mag: Flash-Supported Browsers
+## 🛠️ Local Development Quick Start (Without Docker)
 
-* **[Chromium 82.0](https://chromium.en.uptodown.com/windows/download/2181158)**
-* **[Firefox 84.0 (64-bit)](https://download-installer.cdn.mozilla.net/pub/firefox/releases/84.0/win64/en-US/Firefox%20Setup%2084.0.exe)** or [32-bit](https://download-installer.cdn.mozilla.net/pub/firefox/releases/84.0/win32/en-US/Firefox%20Setup%2084.0.exe)
-* **[Basilisk Browser](https://www.basilisk-browser.org/)** (NPAPI compatible)
+### 1. Install Dependencies
+```bash
+# Backend requirements
+cd server
+pip install -r requirements.txt
 
-> ⚠️ Firefox will auto-update by default. Disable this in:
-> `Menu (三) > Options > General > Firefox Updates`
+# (Optional) Rebuild modern web client
+cd ../web
+npm install
+npm run build
+```
 
-> ⚠️ Chromium disables Flash by default. You must manually enable it in settings.
+### 2. Start the Server
+```bash
+cd ../server
+python server.py
+```
+
+### 3. Play in Browser
+Open **`http://localhost:8080`** in your browser.
 
 ---
+
+## 🌟 Dual Play Modes
+
+1. **✨ Modern Web Client (HTML5 / TypeScript / WebSockets)**
+   * Hardware-accelerated 2D canvas rendering with 60 FPS real-time side-scrolling physics.
+   * Responsive medieval HUD (Health/Mana/XP bars, skill hotbar with cooldowns, interactive chat, currency tracking).
+   * Hero creation & customization (Paladin, Rogue, Mage classes, hair/skin/armor color pickers).
+   * Fully native: zero plugins, zero Flash player required.
+
+2. **🏛️ WebAssembly Flash Preservation (Ruffle)**
+   * One-click toggle in the top-right header to switch to the original compiled Flash SWFs running inside modern WebAssembly.
+   * Backward-compatible with standalone Flash Projector at:
+     `http://localhost:8080/p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv` (TCP port `8082`).
+
+---
+
+## 🏗️ Architecture Overview
+
+```
+Dungeon-Blitz-preservation-Project/
+├── Dockerfile                  # Multi-stage production container build
+├── docker-compose.yml          # One-click hostable service with persistent volume
+├── server/
+│   ├── server.py               # Main game server & dual-transport dispatch
+│   ├── websocket_server.py     # aiohttp async HTTP + WebSocket gateway (/ws)
+│   ├── database.py             # SQLite WAL-mode persistence (auto-migrates legacy JSONs)
+│   ├── BitBuffer.py/bitreader  # Bit-level binary serialization protocol
+│   ├── PKTTYPES.py             # 150+ OpCodes (Combat, Forge, Pets, Quests, Socials)
+│   └── web_dist/               # Compiled modern web client static bundle
+└── web/                        # Modern Web Client (TypeScript + Vite)
+    ├── src/
+    │   ├── protocol/           # TypeScript BitBuffer, BitReader, NetworkClient
+    │   ├── engine/             # 2D Canvas renderer, physics, input, entity manager
+    │   ├── ui/                 # Auth modal, character creation, HUD, Flash modal
+    │   └── main.ts             # Application bootstrapper
+    └── vite.config.ts
+```
+
+---
+
 ## 📜 Legal Notice
 
 This project is for **archival** and **educational purposes**.
-The maintainers do not endorse monetization, paid access, or commercial exploitation
-of preserved content.
-
-
----
+The maintainers do not endorse monetization, paid access, or commercial exploitation of preserved content.

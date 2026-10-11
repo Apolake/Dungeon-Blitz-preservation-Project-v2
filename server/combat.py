@@ -53,7 +53,7 @@ def build_gear_change_packet(entity_id: int, equipped_gears: list[dict]) -> byte
             write_enttype_gear(bb, gear)
         else:
             bb.write_method_15(True)  # slot exists
-            bb.write_method_15(False)  # empty slot → client builds No<Class><Slot>
+            bb.write_method_15(False)  # empty slot -> client builds No<Class><Slot>
 
     payload = bb.to_bytes()
     return struct.pack(">HH", 0xAF, len(payload)) + payload

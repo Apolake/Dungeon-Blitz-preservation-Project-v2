@@ -188,7 +188,7 @@ def _on_forge_done_for(user_id: str, char_name: str, primary: int, secondary: in
                 usedlist=usedlist,
                 action="charm craft complete"
             )
-            print(f"[{session.addr}] Sent forge-complete packet → primary={primary}, secondary={secondary}, tier={tier}")
+            print(f"[{session.addr}] Sent forge-complete packet -> primary={primary}, secondary={secondary}, tier={tier}")
 
 def schedule_forge(user_id: str, char_name: str, run_at: int, primary: int, secondary: int):
     scheduler.schedule(

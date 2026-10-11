@@ -400,7 +400,7 @@ def handle_level_transfer_request(session, data):
     )
 
     session.conn.sendall(pkt_out)
-    #print(f"[{session.addr}] Sent ENTER_WORLD with token {new_token} "f"for {target_level} → pos=({new_x},{new_y})")
+    #print(f"[{session.addr}] Sent ENTER_WORLD with token {new_token} "f"for {target_level} -> pos=({new_x},{new_y})")
 
 def send_door_state(session, door_id, door_state, door_target, star_rating=None):
     bb = BitBuffer()
@@ -479,7 +479,7 @@ def handle_request_door_state(session, data):
             door_target = target_level
 
         else:
-            # Normal overworld door → static
+            # Normal overworld door -> static
             door_state = door.DOORSTATE_STATIC
             door_target = target_level
 

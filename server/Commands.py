@@ -267,7 +267,7 @@ def handle_talk_to_npc(session, data):
     session.conn.sendall(pkt)
 
     print(
-        f"[{session.addr}] [PKT0x7A] TalkToNPC id={npc_id} entType={ent_type} → "
+        f"[{session.addr}] [PKT0x7A] TalkToNPC id={npc_id} entType={ent_type} -> "
         f"dialogue_id={dialogue_id}, mission_id={mission_id}"
     )
 
@@ -331,7 +331,7 @@ def handle_linkupdater(session, data):
 
     now_ms = int(time.time() * 1000)
 
-    # First update → establish baseline
+    # First update -> establish baseline
     if not hasattr(session, "clock_base"):
         session.clock_base = now_ms
         session.clock_offset_ms = 0

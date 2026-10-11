@@ -50,7 +50,7 @@ def handle_login_create(session, data):
     pkt = build_login_character_list_bitpacked(session.user_id, session.char_list)
     session.conn.sendall(pkt)
 
-    print(f"[{session.addr}] [0x13] Login/Create OK for {email} → {len(session.char_list)} characters")
+    print(f"[{session.addr}] [0x13] Login/Create OK for {email} -> {len(session.char_list)} characters")
 
 def handle_login_authenticate(session, data):
     br = BitReader(data[4:])
@@ -77,7 +77,7 @@ def handle_login_authenticate(session, data):
     pkt = build_login_character_list_bitpacked(session.user_id, session.char_list)
     session.conn.sendall(pkt)
 
-    print(f"[{session.addr}] [0x14] Login success for {email} → user_id={user_id}, {len(session.char_list)} chars")
+    print(f"[{session.addr}] [0x14] Login success for {email} -> user_id={user_id}, {len(session.char_list)} chars")
 
 def handle_login_character_create(session, data):
     br = BitReader(data[4:])
@@ -155,7 +155,7 @@ def handle_login_character_create(session, data):
     session.conn.sendall(pkt)
     GS.pending_world[tk] = (new_char, current_level, prev_level)
 
-    print(f"[{session.addr}] [0x17] Character '{name}' created → entering {current_level} (tk={tk})")
+    print(f"[{session.addr}] [0x17] Character '{name}' created -> entering {current_level} (tk={tk})")
 
 def handle_character_select(session, data):
     br = BitReader(data[4:])

@@ -5,9 +5,11 @@ import time
 from BitBuffer import BitBuffer
 from constants import class_3, class_1, class_64, class_111, class_66, GearType, EGG_TYPES, class_16, class_7
 
-HOST = "127.0.0.1"
-PORTS = [8080]# Developer mode Port : 7498
-PORT_HTTP = 8081
+import os
+HOST = os.getenv("HOST", "0.0.0.0")
+TCP_PORT_STR = os.getenv("TCP_PORTS", "8082")
+PORTS = [int(p.strip()) for p in TCP_PORT_STR.split(",") if p.strip()]
+PORT_HTTP = int(os.getenv("PORT_HTTP", os.getenv("PORT", "8080")))
 
 class GlobalState:
     def __init__(self):
@@ -70,7 +72,7 @@ def send_building_complete_packet(session, building_id: int, rank: int):
     bb.write_method_15(True)           # complete flag
     payload = bb.to_bytes()
     session.conn.sendall(struct.pack(">HH", 0xD8, len(payload)) + payload)
-    print(f"[{session.addr}] Sent 0xD8 building complete → id={building_id}, rank={rank}")
+    print(f"[{session.addr}] Sent 0xD8 building complete -> id={building_id}, rank={rank}")
 
 def send_skill_complete_packet(session, ability_id: int):
     bb = BitBuffer()

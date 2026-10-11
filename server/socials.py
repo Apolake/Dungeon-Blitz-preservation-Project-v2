@@ -29,7 +29,7 @@ def find_char_data_from_server_memory(name):
             for c in chars:
                 if c["name"].lower() == name.lower():
                     return c
-    return {}  # offline or unknown → dummy fallback
+    return {}  # offline or unknown -> dummy fallback
 
 def get_live_friend_info(name, session, char):
     """Build the dynamic friend block (class, level, online)."""
@@ -172,22 +172,22 @@ def handle_private_message(session, data):
     sender_name = session.current_character
 
     if recipient_session:
-        # 0x47 → delivered to recipient
+        # 0x47 -> delivered to recipient
         recipient_session.conn.sendall(make_packet(0x47, sender_name, message))
 
-        # 0x48 → feedback to sender
+        # 0x48 -> feedback to sender
         session.conn.sendall(make_packet(0x48, recipient_name, message))
 
-        print(f"[PM] {sender_name} → {recipient_session.current_character}: \"{message}\"")
+        print(f"[PM] {sender_name} -> {recipient_session.current_character}: \"{message}\"")
         return
 
-    # --- Recipient not found → send error (0x44) ---
+    # --- Recipient not found -> send error (0x44) ---
     err_txt = f"Player {recipient_name} not found"
     err_bytes = err_txt.encode("utf-8")
     pkt = struct.pack(">HH", 0x44, len(err_bytes) + 2) + struct.pack(">H", len(err_bytes)) + err_bytes
     session.conn.sendall(pkt)
 
-    print(f"[PM-ERR] {sender_name} → {recipient_name} (NOT FOUND)")
+    print(f"[PM-ERR] {sender_name} -> {recipient_name} (NOT FOUND)")
 
 def handle_room_thought(session, data):
     br = BitReader(data[4:])
