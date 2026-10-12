@@ -13,7 +13,7 @@ from ai_logic import AI_ENABLED, ensure_ai_loop, run_ai_loop
 from bitreader import BitReader
 from constants import EntType, load_class_template
 from entity import Send_Entity_Data, ensure_level_npcs, normalize_entity_for_send
-from globals import SECRET, _level_add, all_sessions, GS, HOST, PORTS, get_target_host
+from globals import SECRET, _level_add, all_sessions, GS, HOST, PORTS, get_target_host, get_game_port
 from level_config import LEVEL_CONFIG, get_spawn_coordinates
 from socials import get_group_for_session, online_group_members, update_session_group_cache, build_group_update_packet
 
@@ -139,7 +139,7 @@ def handle_login_character_create(session, data):
         old_x=0,
         old_y=0,
         host=target_host,
-        port=PORTS[0],
+        port=get_game_port(),
         new_level_swf=level_config[0],
         new_map_lvl=level_config[1],
         new_base_lvl=level_config[2],
@@ -195,7 +195,7 @@ def handle_character_select(session, data):
             old_x=0,
             old_y=0,
             host=target_host,
-            port=PORTS[0],
+            port=get_game_port(),
             new_level_swf=level_config[0],
             new_map_lvl=level_config[1],
             new_base_lvl=level_config[2],

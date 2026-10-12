@@ -7,7 +7,7 @@ from constants import class_3, class_1, class_64, class_111, class_66, GearType,
 
 import os
 HOST = os.getenv("HOST", "0.0.0.0")
-TCP_PORT_STR = os.getenv("TCP_PORTS", "8092")
+TCP_PORT_STR = os.getenv("TCP_PORTS", "8092,7498")
 PORTS = [int(p.strip()) for p in TCP_PORT_STR.split(",") if p.strip()]
 PORT_HTTP = int(os.getenv("PORT_HTTP", os.getenv("PORT", "8090")))
 PUBLIC_HOST = os.getenv("PUBLIC_HOST", "").strip()
@@ -26,6 +26,10 @@ def get_target_host(session=None) -> str:
     if HOST and HOST != "0.0.0.0":
         return HOST
     return "127.0.0.1"
+
+def get_game_port() -> int:
+    """Returns the game server port (7498 for Flash launcher if available, else PORTS[0])."""
+    return 7498 if 7498 in PORTS else PORTS[0]
 
 
 class GlobalState:

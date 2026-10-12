@@ -7,7 +7,7 @@ from accounts import load_characters, save_characters
 from WorldEnter import build_enter_world_packet
 from bitreader import BitReader
 from constants import door, class_119, Entity, _load_json
-from globals import send_admin_chat, handle_entity_destroy_server, all_sessions, GS, PORTS, HOST, get_target_host
+from globals import send_admin_chat, handle_entity_destroy_server, all_sessions, GS, PORTS, HOST, get_target_host, get_game_port
 
 DATA_DIR = "data"
 
@@ -386,7 +386,7 @@ def handle_level_transfer_request(session, data):
         old_x=safe_old_x,
         old_y=safe_old_y,
         host=target_host,
-        port=PORTS[0],
+        port=get_game_port(),
         new_level_swf=new_swf,
         new_map_lvl=map_id,
         new_base_lvl=base_id,

@@ -220,6 +220,16 @@ def create_app(flash_static_dir: str = None):
     app.router.add_get("/", index_handler)
     app.router.add_get("/index.html", index_handler)
 
+    # Launcher metadata endpoint for Electron / Flash Launcher
+    async def server_info_handler(request: web.Request):
+        game_port = 7498 if 7498 in PORTS else PORTS[0]
+        return web.json_response({
+            "login": PORTS[0],
+            "game": game_port,
+        }, headers={"Access-Control-Allow-Origin": "*"})
+
+    app.router.add_get("/client/server.json", server_info_handler)
+
     # Mock gameanalytics so game initialization does not hang
     async def analytics_mock(request: web.Request):
         return web.json_response({"status": "ok"}, headers={"Access-Control-Allow-Origin": "*"})
@@ -274,6 +284,7 @@ def create_app(flash_static_dir: str = None):
         print(f"[HTTP 404 NOT FOUND] '{request.path}'", flush=True)
         return web.Response(status=404, text=f"File not found: {request.path}", headers={"Access-Control-Allow-Origin": "*"})
 
+    app.router.add_get("/client/{tail:.*}", asset_handler)
     app.router.add_get("/p/{tail:.*}", asset_handler)
     app.router.add_get("/flash/{tail:.*}", asset_handler)
     app.router.add_get("/js/{tail:.*}", asset_handler)
