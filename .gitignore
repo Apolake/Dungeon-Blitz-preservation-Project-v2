@@ -1,14 +1,9 @@
+node_modules/
+dist/
+src/server/dist/
 .idea/
 __pycache__/
 *.pyc
-Accounts.json
-saves/
-server/Accounts.json
-server/Dungeon Blitz.exe
-server/favicon.ico
-server/launcher.py
-node_modules/
-web/node_modules/
 *.db
 *.db-wal
 *.db-shm

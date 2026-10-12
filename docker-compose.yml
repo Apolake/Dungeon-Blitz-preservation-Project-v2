@@ -9,28 +9,27 @@ services:
     container_name: dungeon-blitz-server
     restart: unless-stopped
     environment:
-      - HOST=0.0.0.0
-      - PORT_HTTP=8090
-      - TCP_PORTS=8092
-      - PUBLIC_HOST=${PUBLIC_HOST:-}
-      - DATA_DIR=/data
+      - MULTIPLAYER_MODE=true
+      - MULTIPLAYER_BASE_IP=${MULTIPLAYER_BASE_IP:-144.91.77.234}
+      - STATIC_PORT=8090
+      - GAME_PORT=8092
+      - GAME_PORTS=8092,7498
+      - ENABLE_POLICY_SERVER=true
     ports:
-      # Web Client & WebSocket Gateway
+      # Web Client & Static Assets
       - "8090:8090"
-      # Legacy TCP Game Server (For Flash Projector)
+      # TCP Game / Login Server
       - "8092:8092"
+      # Native Flash Game Port
+      - "7498:7498"
+      # Flash Socket Policy Port
+      - "843:843"
     volumes:
-      # Persistent SQLite Database & Character Saves
-      - dungeon-blitz-data:/data
-      # Mount server code and assets directly for instant updates on git pull
-      - ./server:/app/server
+      # Persistent Character Saves & Accounts
+      - ./src/server/data/saves:/app/src/server/data/saves
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8090/crossdomain.xml"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/healthz"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 5s
-
-volumes:
-  dungeon-blitz-data:
-    name: dungeon-blitz-data
