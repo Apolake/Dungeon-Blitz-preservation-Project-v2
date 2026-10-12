@@ -141,7 +141,7 @@ class ClientSession:
                 pass
 
         s = GS.session_by_token.get(self.clientEntID)
-        if s:
+        if s is self:
             s.running = False
 
         if self.player_spawned and self.current_level:

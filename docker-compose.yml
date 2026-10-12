@@ -12,6 +12,7 @@ services:
       - HOST=0.0.0.0
       - PORT_HTTP=8090
       - TCP_PORTS=8092
+      - PUBLIC_HOST=${PUBLIC_HOST:-}
       - DATA_DIR=/data
     ports:
       # Web Client & WebSocket Gateway

@@ -58,7 +58,7 @@ def get_ws_session_class():
 
 
 async def ws_handler(request: web.Request):
-    ws = web.WebSocketResponse()
+    ws = web.WebSocketResponse(heartbeat=30.0)
     await ws.prepare(request)
 
     peername = request.transport.get_extra_info('peername')
@@ -70,9 +70,16 @@ async def ws_handler(request: web.Request):
     session = SessionClass(ws, addr)
     session.loop = asyncio.get_running_loop()
 
+    # Determine target host from HTTP Host header (e.g. "144.91.77.234" or "localhost")
+    host_header = request.headers.get('Host', '')
+    if host_header:
+        session.target_host = host_header.split(':')[0]
+    else:
+        session.target_host = '127.0.0.1'
+
     # Register with global session pool
     GS.all_sessions.append(session)
-    print(f"[WS] Client connected from {addr}. Total sessions: {len(GS.all_sessions)}")
+    print(f"[WS] Client connected from {addr} (target_host={session.target_host}). Total sessions: {len(GS.all_sessions)}")
 
     try:
         async for msg in ws:

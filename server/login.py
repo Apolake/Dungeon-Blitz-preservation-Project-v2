@@ -13,7 +13,7 @@ from ai_logic import AI_ENABLED, ensure_ai_loop, run_ai_loop
 from bitreader import BitReader
 from constants import EntType, load_class_template
 from entity import Send_Entity_Data, ensure_level_npcs, normalize_entity_for_send
-from globals import SECRET, _level_add, all_sessions, GS, HOST, PORTS
+from globals import SECRET, _level_add, all_sessions, GS, HOST, PORTS, get_target_host
 from level_config import LEVEL_CONFIG, get_spawn_coordinates
 from socials import get_group_for_session, online_group_members, update_session_group_cache, build_group_update_packet
 
@@ -129,6 +129,7 @@ def handle_login_character_create(session, data):
     _level_add(current_level, session)
 
     level_config = LEVEL_CONFIG.get(current_level, ("LevelsNR.swf/a_Level_NewbieRoad", 1, 1, False))
+    target_host = get_target_host(session)
 
     pkt = build_enter_world_packet(
         transfer_token=tk,
@@ -137,7 +138,7 @@ def handle_login_character_create(session, data):
         has_old_coord=False,
         old_x=0,
         old_y=0,
-        host=HOST,
+        host=target_host,
         port=PORTS[0],
         new_level_swf=level_config[0],
         new_map_lvl=level_config[1],
@@ -155,7 +156,7 @@ def handle_login_character_create(session, data):
     session.conn.sendall(pkt)
     GS.pending_world[tk] = (new_char, current_level, prev_level)
 
-    print(f"[{session.addr}] [0x17] Character '{name}' created -> entering {current_level} (tk={tk})")
+    print(f"[{session.addr}] [0x17] Character '{name}' created -> entering {current_level} (tk={tk}, host={target_host}:{PORTS[0]})")
 
 def handle_character_select(session, data):
     br = BitReader(data[4:])
@@ -184,6 +185,7 @@ def handle_character_select(session, data):
         is_hard = current_level.endswith("Hard")
         new_moment = "Hard" if is_hard else ""
         new_alter = "Hard" if is_hard else ""
+        target_host = get_target_host(session)
 
         pkt = build_enter_world_packet(
             transfer_token=tk,
@@ -192,7 +194,7 @@ def handle_character_select(session, data):
             has_old_coord=False,
             old_x=0,
             old_y=0,
-            host=HOST,
+            host=target_host,
             port=PORTS[0],
             new_level_swf=level_config[0],
             new_map_lvl=level_config[1],
@@ -209,7 +211,7 @@ def handle_character_select(session, data):
 
         session.conn.sendall(pkt)
         GS.pending_world[tk] = (c, current_level, prev_level)
-        print(f"[{session.addr}] [0x16] Transfer begin: {name}, tk={tk}, level={current_level}")
+        print(f"[{session.addr}] [0x16] Transfer begin: {name}, tk={tk}, level={current_level}, host={target_host}:{PORTS[0]}")
 
 def handle_gameserver_login(session, data):
     br = BitReader(data[4:])
@@ -217,6 +219,8 @@ def handle_gameserver_login(session, data):
     Level_Swf_name = br.read_method_26()
     first_login   = br.read_method_15()
     is_dev_client  = br.read_method_15()
+
+    print(f"[{session.addr}] [0x1F] Gameserver login request: token={token}, swf={Level_Swf_name}, first={first_login}, dev={is_dev_client}")
 
     entry = GS.pending_world.get(token)
     if entry is None:
@@ -244,6 +248,9 @@ def handle_gameserver_login(session, data):
 
     session.clientEntID   = token
     session.authenticated = True
+    session.player_spawned = True
+    GS.session_by_token[token] = session
+    _level_add(target_level, session)
     GS.current_characters[session.user_id] = session.current_character
 
     # Save/update character list
@@ -264,9 +271,6 @@ def handle_gameserver_login(session, data):
     # Store token mapping (needed by client for entType etc.)
     GS.used_tokens[token] = (char, target_level, previous_level)
 
-    #TODO...
-    #level_config = LEVEL_CONFIG.get(target_level, ("", 1, 1, False))
-    #bonus_levels = level_config[2]
     bonus_levels = 0
 
     welcome = Player_Data_Packet(
@@ -282,6 +286,7 @@ def handle_gameserver_login(session, data):
     )
 
     session.conn.sendall(welcome)
+    print(f"[{session.addr}] [0x10] Sent welcome/Player_Data_Packet for '{char['name']}' in {target_level} (pos={new_x},{new_y})")
 
     gid, group = get_group_for_session(session)
     if gid and group:
@@ -290,8 +295,6 @@ def handle_gameserver_login(session, data):
         pkt = build_group_update_packet(members)
         for member, _ in members:
             member.conn.sendall(pkt)
-
-    #print(f"[{session.addr}] Welcome: {char['name']} (token {token})")
 
     if AI_ENABLED:
         ensure_ai_loop(session.current_level, run_ai_loop)
@@ -316,3 +319,4 @@ def handle_gameserver_login(session, data):
                 struct.pack(">HH", 0x0F, len(payload)) + payload
             )
             session.entities[npc["id"]] = npc
+        print(f"[{session.addr}] Spawned {len(npcs)} NPCs in {session.current_level}")

@@ -67,26 +67,30 @@
   <script>
     window.RufflePlayer = window.RufflePlayer || {};
     const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/ws";
+    
+    // Comprehensive proxy rules for any host/port combination requested by the game client
+    const candidateHosts = [
+      window.location.hostname,
+      "127.0.0.1",
+      "localhost",
+      "0.0.0.0"
+    ];
+    const candidatePorts = [8080, 8090, 8092, 443, 7498, 20112, 2024, 80];
+    const proxyRules = [];
+    candidateHosts.forEach(h => {
+      if (!h) return;
+      candidatePorts.forEach(p => {
+        proxyRules.push({ host: h, port: p, proxyUrl: wsUrl });
+      });
+    });
+
     window.RufflePlayer.config = {
       autoplay: "on",
       unmuteOverlay: "hidden",
       letterbox: "on",
       allowScriptAccess: true,
       openUrlMode: "confirm",
-      socketProxy: [
-        { host: "127.0.0.1", port: 8080, proxyUrl: wsUrl },
-        { host: "127.0.0.1", port: 443, proxyUrl: wsUrl },
-        { host: "127.0.0.1", port: 8092, proxyUrl: wsUrl },
-        { host: "127.0.0.1", port: 7498, proxyUrl: wsUrl },
-        { host: "localhost", port: 8080, proxyUrl: wsUrl },
-        { host: "localhost", port: 443, proxyUrl: wsUrl },
-        { host: "localhost", port: 8092, proxyUrl: wsUrl },
-        { host: "localhost", port: 7498, proxyUrl: wsUrl },
-        { host: window.location.hostname, port: 8080, proxyUrl: wsUrl },
-        { host: window.location.hostname, port: 443, proxyUrl: wsUrl },
-        { host: window.location.hostname, port: 8092, proxyUrl: wsUrl },
-        { host: window.location.hostname, port: 7498, proxyUrl: wsUrl }
-      ]
+      socketProxy: proxyRules
     };
   </script>
   <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>

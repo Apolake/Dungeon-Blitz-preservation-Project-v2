@@ -10,6 +10,23 @@ HOST = os.getenv("HOST", "0.0.0.0")
 TCP_PORT_STR = os.getenv("TCP_PORTS", "8092")
 PORTS = [int(p.strip()) for p in TCP_PORT_STR.split(",") if p.strip()]
 PORT_HTTP = int(os.getenv("PORT_HTTP", os.getenv("PORT", "8090")))
+PUBLIC_HOST = os.getenv("PUBLIC_HOST", "").strip()
+
+def get_target_host(session=None) -> str:
+    """
+    Returns the network address that a client should connect to for the game server.
+    Avoids returning 0.0.0.0 which causes client sockets to fail/hang.
+    """
+    if session and hasattr(session, "target_host") and session.target_host:
+        h = str(session.target_host).strip()
+        if h and h != "0.0.0.0":
+            return h
+    if PUBLIC_HOST and PUBLIC_HOST != "0.0.0.0":
+        return PUBLIC_HOST
+    if HOST and HOST != "0.0.0.0":
+        return HOST
+    return "127.0.0.1"
+
 
 class GlobalState:
     def __init__(self):

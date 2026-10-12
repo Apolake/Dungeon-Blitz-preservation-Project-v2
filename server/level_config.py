@@ -7,7 +7,7 @@ from accounts import load_characters, save_characters
 from WorldEnter import build_enter_world_packet
 from bitreader import BitReader
 from constants import door, class_119, Entity, _load_json
-from globals import send_admin_chat, handle_entity_destroy_server, all_sessions, GS, PORTS, HOST
+from globals import send_admin_chat, handle_entity_destroy_server, all_sessions, GS, PORTS, HOST, get_target_host
 
 DATA_DIR = "data"
 
@@ -377,6 +377,7 @@ def handle_level_transfer_request(session, data):
         safe_old_y = 0
         has_old_coord = False
 
+    target_host = get_target_host(session)
     pkt_out = build_enter_world_packet(
         transfer_token=new_token,
         old_level_id=0,
@@ -384,7 +385,7 @@ def handle_level_transfer_request(session, data):
         has_old_coord=has_old_coord,
         old_x=safe_old_x,
         old_y=safe_old_y,
-        host=HOST,
+        host=target_host,
         port=PORTS[0],
         new_level_swf=new_swf,
         new_map_lvl=map_id,
