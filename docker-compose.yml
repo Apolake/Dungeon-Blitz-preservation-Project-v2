@@ -14,15 +14,17 @@ services:
       - TCP_PORTS=8092
       - DATA_DIR=/data
     ports:
-      # Modern Web Client & WebSocket Gateway
+      # Web Client & WebSocket Gateway
       - "8090:8090"
-      # Legacy TCP Game Server (Optional for Flash Projector)
+      # Legacy TCP Game Server (For Flash Projector)
       - "8092:8092"
     volumes:
       # Persistent SQLite Database & Character Saves
       - dungeon-blitz-data:/data
+      # Mount server code and assets directly for instant updates on git pull
+      - ./server:/app/server
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8090/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/crossdomain.xml"]
       interval: 30s
       timeout: 5s
       retries: 3

@@ -97,7 +97,8 @@
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
-      const swfUrl = "p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv";
+      // Use timestamp query param to prevent browser caching stale SWFs
+      const swfUrl = "p/cbv/DungeonBlitz.swf?fv=cbq&gv=cbv&v=" + Date.now();
       const container = document.getElementById("game-container");
       
       const ruffle = window.RufflePlayer.newest();
