@@ -14,6 +14,7 @@ services:
       - STATIC_PORT=8090
       - GAME_PORT=8092
       - GAME_PORTS=8092,7498
+      - CLIENT_GAME_PORT=7498
       - ENABLE_POLICY_SERVER=true
     ports:
       # Web Client & Static Assets

@@ -1118,7 +1118,7 @@ export class CharacterHandler {
             token,
             0, "", false, 0, 0,
             Config.HOST,
-            Config.PORTS[0],
+            Config.CLIENT_GAME_PORT,
             levelSpec.swf,
             runtimeMapLevel,
             runtimeBaseLevel,

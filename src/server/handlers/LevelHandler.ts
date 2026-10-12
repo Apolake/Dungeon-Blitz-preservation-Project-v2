@@ -5108,7 +5108,7 @@ export class LevelHandler {
             Math.round(oldX),
             Math.round(oldY),
             Config.HOST,
-            Config.PORTS[0],
+            Config.CLIENT_GAME_PORT,
             levelSpec.swf,
             runtimeMapLevel,
             runtimeBaseLevel,

@@ -201,6 +201,7 @@ const MULTIPLAYER_HOST = normalizeHostValue(
 );
 const DEFAULT_STATIC_PORT = parseNumberEnv('PORT', parseNumberEnv('STATIC_PORT', 8090));
 const DEFAULT_GAME_PORTS = [8092, 7498];
+const DEFAULT_CLIENT_GAME_PORT = parseNumberEnv('CLIENT_GAME_PORT', 7498);
 const DEFAULT_POLICY_PORT = 843;
 const REWARD_ROLL_DEBUG = parseBooleanEnv('REWARD_ROLL_DEBUG', process.env.NODE_ENV === 'test');
 
@@ -213,6 +214,7 @@ export const Config = {
     STATIC_PORT: parseNumberEnv('STATIC_PORT', DEFAULT_STATIC_PORT),
     PORTS: parsePortsList('GAME_PORT', 'GAME_PORTS', DEFAULT_GAME_PORTS),
     POLICY_PORT: parseNumberEnv('POLICY_PORT', DEFAULT_POLICY_PORT),
+    CLIENT_GAME_PORT: DEFAULT_CLIENT_GAME_PORT,
     ENABLE_POLICY_SERVER: parseBooleanEnv('ENABLE_POLICY_SERVER', MULTIPLAYER_MODE),
     REWARD_ROLL_DEBUG,
     SECRET: resolveRuntimeKeyHex(),
