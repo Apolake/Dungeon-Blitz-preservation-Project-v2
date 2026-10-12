@@ -28,8 +28,11 @@ def get_target_host(session=None) -> str:
     return "127.0.0.1"
 
 def get_game_port() -> int:
-    """Returns the game server port (7498 for Flash launcher if available, else PORTS[0])."""
-    return 7498 if 7498 in PORTS else PORTS[0]
+    """
+    Returns 7498 for Flash game client.
+    The Electron launcher listens locally on 7498 and proxies it to the VPS server.
+    """
+    return 7498
 
 
 class GlobalState:
