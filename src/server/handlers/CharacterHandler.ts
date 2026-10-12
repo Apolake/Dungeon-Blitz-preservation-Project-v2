@@ -1383,10 +1383,8 @@ export class CharacterHandler {
         // Spawn NPCs
         EntityHandler.rescaleDungeonEntitiesForParty(client);
         LevelHandler.spawnLevelNpcs(client, entry.targetLevel);
-        const restoredRoomProgress = LevelHandler.restoreTransferredRoomProgress(client, entry);
-        if (!restoredRoomProgress) {
-            LevelHandler.primeTutorialRoomEvents(client);
-        }
+        // NOTE: Suppress premature room event start packets (0xA5) during login.
+        // Flash crashes with a null reference exception if room event start is received before the level SWF is loaded.
         LevelHandler.syncSharedDungeonQuestProgressState(client);
         await LevelHandler.prepareCraftTownTutorialEntry(client);
         LevelHandler.scheduleClientSpawnFallback(client);

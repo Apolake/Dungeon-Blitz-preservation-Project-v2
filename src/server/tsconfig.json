@@ -11,5 +11,5 @@
     "resolveJsonModule": true
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "native_bridge/build"]
+  "exclude": ["node_modules", "native_bridge/build", "dist"]
 }
