@@ -27,11 +27,15 @@ def get_target_host(session=None) -> str:
         return HOST
     return "127.0.0.1"
 
-def get_game_port() -> int:
+def get_game_port(session=None) -> int:
     """
-    Returns 7498 for Flash game client.
-    The Electron launcher listens locally on 7498 and proxies it to the VPS server.
+    Returns the appropriate game world port based on client connection type.
+    - Web / WebSocket client: uses 7498 (or whatever port proxy rules intercept to /ws).
+    - Electron Launcher: uses 7498 (proxied locally by launcher to VPS 8092).
+    - Direct TCP client without proxy: uses PORTS[0] (8092).
     """
+    if session and getattr(session, "is_websocket", False):
+        return 7498
     return 7498
 
 

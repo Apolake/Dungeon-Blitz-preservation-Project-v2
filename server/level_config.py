@@ -386,7 +386,7 @@ def handle_level_transfer_request(session, data):
         old_x=safe_old_x,
         old_y=safe_old_y,
         host=target_host,
-        port=get_game_port(),
+        port=get_game_port(session),
         new_level_swf=new_swf,
         new_map_lvl=map_id,
         new_base_lvl=base_id,
