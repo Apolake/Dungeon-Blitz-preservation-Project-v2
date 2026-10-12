@@ -5,40 +5,56 @@ from aiohttp import web, WSMsgType
 from globals import GS, PORT_HTTP, PORTS
 
 
-class WebSocketClientSession:
-    """Adapts an aiohttp WebSocket connection to the Dungeon Blitz ClientSession interface."""
-    def __init__(self, ws: web.WebSocketResponse, addr: tuple):
-        self.ws = ws
-        self.addr = addr
-        self.session_id = id(self)
-        self.buffer = bytearray()
-        self.authenticated = False
-        self.account_id = None
-        self.account_data = None
-        self.username = None
-        self.player = None
-        self.current_location = None
-        self.is_websocket = True
+class WebSocketConnAdapter:
+    """Wraps WebSocket session to provide the synchronous .sendall() socket interface."""
+    def __init__(self, ws_session):
+        self.ws_session = ws_session
 
-    async def send_bytes_async(self, data: bytes):
-        if not self.ws.closed:
-            await self.ws.send_bytes(data)
-
-    def send(self, data: bytes):
-        """Synchronous send method called by server game logic."""
-        if self.ws.closed:
-            return
-        asyncio.run_coroutine_threadsafe(
-            self.send_bytes_async(data),
-            self.loop
-        )
+    def sendall(self, data: bytes):
+        self.ws_session.send(data)
 
     def close(self):
-        if not self.ws.closed:
-            asyncio.run_coroutine_threadsafe(
-                self.ws.close(),
-                self.loop
-            )
+        self.ws_session.close()
+
+
+def get_ws_session_class():
+    from server import ClientSession
+
+    class WebSocketClientSession(ClientSession):
+        """Adapts an aiohttp WebSocket connection to the Dungeon Blitz ClientSession interface."""
+        def __init__(self, ws: web.WebSocketResponse, addr: tuple):
+            super().__init__(conn=None, addr=addr)
+            self.conn = WebSocketConnAdapter(self)
+            self.ws = ws
+            self.loop = None
+            self.is_websocket = True
+
+        async def send_bytes_async(self, data: bytes):
+            if not self.ws.closed:
+                await self.ws.send_bytes(data)
+
+        def send(self, data: bytes):
+            """Synchronous send method called by server game logic."""
+            if self.ws.closed:
+                return
+            if self.loop:
+                asyncio.run_coroutine_threadsafe(
+                    self.send_bytes_async(data),
+                    self.loop
+                )
+
+        def close(self):
+            if not self.ws.closed and self.loop:
+                asyncio.run_coroutine_threadsafe(
+                    self.ws.close(),
+                    self.loop
+                )
+
+        def close_connection(self):
+            super().close_connection()
+            self.close()
+
+    return WebSocketClientSession
 
 
 async def ws_handler(request: web.Request):
@@ -48,7 +64,10 @@ async def ws_handler(request: web.Request):
     peername = request.transport.get_extra_info('peername')
     addr = peername if peername else ('websocket', 0)
 
-    session = WebSocketClientSession(ws, addr)
+    from server import handle_incoming_data, handle_disconnect
+
+    SessionClass = get_ws_session_class()
+    session = SessionClass(ws, addr)
     session.loop = asyncio.get_running_loop()
 
     # Register with global session pool
@@ -56,21 +75,16 @@ async def ws_handler(request: web.Request):
     print(f"[WS] Client connected from {addr}. Total sessions: {len(GS.all_sessions)}")
 
     try:
-        from server import handle_incoming_data, handle_disconnect
-
         async for msg in ws:
             if msg.type == WSMsgType.BINARY:
-                handle_incoming_data(session, bytearray(msg.data))
+                handle_incoming_data(session, bytes(msg.data))
             elif msg.type == WSMsgType.TEXT:
-                handle_incoming_data(session, bytearray(msg.data.encode('utf-8')))
+                handle_incoming_data(session, msg.data.encode('utf-8'))
             elif msg.type == WSMsgType.ERROR:
                 print(f"[WS] WebSocket error: {ws.exception()}")
                 break
     finally:
-        from server import handle_disconnect
         handle_disconnect(session)
-        if session in GS.all_sessions:
-            GS.all_sessions.remove(session)
         print(f"[WS] Client disconnected from {addr}. Remaining: {len(GS.all_sessions)}")
 
     return ws
