@@ -1,0 +1,16 @@
+{
+  "name": "dungeonblitz-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dungeon Blitz Client (Electron 11 + Pepper Flash)",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "node scripts/build.js"
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.4.4",
+    "electron": "11.5.0",
+    "resedit": "^3.1.0"
+  }
+}
