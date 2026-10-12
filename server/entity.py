@@ -187,9 +187,9 @@ def Send_Entity_Data(entity: Dict[str, Any]) -> bytes:
         else:
             bb.write_method_6(0, 1)
 
-    cue = entity.get("cue_data", {})
+    cue = entity.get("cue_data", {}) or {}
     for key in ("character_name", "DramaAnim", "SleepAnim"):
-        val = cue.get(key, "")
+        val = cue.get(key, "") or entity.get(key, "")
         bb.write_method_6(1 if val else 0, 1)
         if val:
             bb.write_method_13(val)

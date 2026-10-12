@@ -197,10 +197,21 @@ def send_forge_reroll_packet(
 
 
 def Client_Crash_Reports(session, data):
-    _, length = struct.unpack_from(">HH", data, 0)
-    payload = data[4:4 + length]
-    msg = payload.decode("utf-8", errors="replace")
-    print(f"[{session.addr}] CLIENT ERROR (0x7C): {msg}")
+    try:
+        _, length = struct.unpack_from(">HH", data, 0)
+        payload = data[4:4 + length]
+        msg = payload.decode("utf-8", errors="replace")
+        print(f"[{session.addr}] CLIENT CRASH REPORT (0x7C): {msg}", flush=True)
+        try:
+            from BitBuffer import BitReader
+            br = BitReader(payload)
+            bit_msg = br.read_method_13()
+            if bit_msg:
+                print(f"[{session.addr}] CLIENT CRASH REPORT (0x7C BitReader): {bit_msg}", flush=True)
+        except Exception:
+            pass
+    except Exception as e:
+        print(f"[{session.addr}] CLIENT CRASH REPORT (0x7C parse error: {e}) raw={data.hex()}", flush=True)
 
 def build_room_thought_packet(entity_id: int, text: str) -> bytes:
     bb = BitBuffer()
