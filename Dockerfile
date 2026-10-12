@@ -4,24 +4,24 @@
 # and runs game server on TCP ports 8092 and 7498
 # ==========================================
 
-FROM node:20-slim
+FROM node:22-slim
 
 WORKDIR /app
 
 # Install curl for healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
-# Copy package descriptors
+# Copy package manifests first for efficient Docker layer caching
 COPY package*.json ./
 COPY src/server/package*.json ./src/server/
 
-# Install dependencies and build TypeScript
-RUN npm install && cd src/server && npm install && npm run build
+# Install root and server npm dependencies (without build step yet)
+RUN npm install && cd src/server && npm install
 
-# Copy remaining source code and game assets
+# Copy source code and game assets
 COPY . .
 
-# Build again in case source files changed
+# Compile TypeScript server
 RUN cd src/server && npm run build
 
 ENV MULTIPLAYER_MODE=true

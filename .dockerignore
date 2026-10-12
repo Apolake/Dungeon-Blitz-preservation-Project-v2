@@ -1,0 +1,13 @@
+node_modules
+src/server/node_modules
+dist
+src/server/dist
+.git
+.idea
+__pycache__
+*.pyc
+*.db
+*.db-wal
+*.db-shm
+.DS_Store
+legacy_python_server
