@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface MissionDef {
     MissionName: string;
@@ -194,16 +194,39 @@ export class MissionLoader {
         }
     }
 
+    private static ensureLoaded(): void {
+        if (this.missions.size > 0) {
+            return;
+        }
+        const candidatePaths = [
+            path.join(__dirname, 'MissionTypes.json'),
+            path.join(__dirname, '..', 'data', 'MissionTypes.json'),
+            path.join(process.cwd(), 'data', 'MissionTypes.json'),
+            path.join(process.cwd(), 'src', 'server', 'data', 'MissionTypes.json'),
+            path.join(process.cwd(), 'dist', 'data', 'MissionTypes.json')
+        ];
+        for (const candidate of candidatePaths) {
+            if (fs.existsSync(candidate)) {
+                this.load(path.dirname(candidate));
+                if (this.missions.size > 0) {
+                    break;
+                }
+            }
+        }
+    }
+
     static getMissionDef(id: number): MissionDef | undefined {
-        // if (this.missions.size === 0) this.load(); // Cannot lazy load without dataDir
+        this.ensureLoaded();
         return this.missions.get(id);
     }
 
     static getMissionIdByName(name: string): number | undefined {
+        this.ensureLoaded();
         return this.missionIdsByName.get(this.normalizeMissionName(name));
     }
 
     static findPrimaryMissionByDungeon(levelName: string): MissionDef | undefined {
+        this.ensureLoaded();
         const normalizedLevel = String(levelName ?? '').trim();
         if (!normalizedLevel) {
             return undefined;
@@ -219,6 +242,7 @@ export class MissionLoader {
     }
 
     static getTotalMissions(): number {
-        return this.maxId;
+        this.ensureLoaded();
+        return Math.max(293, this.maxId);
     }
 }

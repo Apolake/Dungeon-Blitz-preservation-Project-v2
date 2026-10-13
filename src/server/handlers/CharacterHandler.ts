@@ -1155,7 +1155,7 @@ export class CharacterHandler {
         const loginToken = br.readMethod9();
         const levelSwf = br.readMethod26(); 
         const firstLogin = br.readMethod15();
-        const isDev = br.readMethod15();
+        const isDev = false;
 
         const pendingLogin = CharacterHandler.resolvePendingGameLogin(client, loginToken);
         if (!pendingLogin) {

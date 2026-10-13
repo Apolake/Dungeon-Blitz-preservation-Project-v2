@@ -834,7 +834,6 @@ export class WorldEnter {
                 for (const buildingId of buildOrder) {
                     bb.writeMethod6(Number(statsByBuilding[buildingId.toString()] ?? 0), 5);
                 }
-            }
 
             const forgeState = WorldEnter.resolveMagicForgeState(magicForge, now);
             bb.writeMethod11(forgeState.has_session ? 1 : 0, 1);
@@ -934,6 +933,7 @@ export class WorldEnter {
             } else {
                 bb.writeMethod11(0, 1);
             }
+        }
 
             bb.writeMethod13(WorldEnter.DEFAULT_NEWS_EVENT.icon);
             bb.writeMethod13(WorldEnter.DEFAULT_NEWS_EVENT.url);
